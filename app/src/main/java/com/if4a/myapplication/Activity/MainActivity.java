@@ -53,51 +53,28 @@ public class MainActivity extends AppCompatActivity {
 
     public void retrieveKuliner(){
         pbKuliner.setVisibility(View.VISIBLE);
+        APIRequestData ard = RetroServer.konekRetrofit().create(APIRequestData.class);
+        Call<ModelResponse> proses = ard.ardRetrieve();
 
-        APIRequestData ARD = new APIRequestData() {
+        proses.enqueue(new Callback<ModelResponse>() {
             @Override
-            public Call<ModelResponse> ardRetrieve() {
+            public void onResponse(Call<ModelResponse> call, Response<ModelResponse> response) {
+                String kode = response.body().getKode();
+                String pesan = response.body().getPesan();
+                listKuliner = response.body().getData();
 
-                APIRequestData ARD = RetroServer.konekRetrofit().create(APIRequestData.class);
-                Call<ModelResponse> proses = ARD.ardRetrieve();
+                adKuliner = new AdapterKuliner(MainActivity.this, listKuliner);
+                rvKuliner.setAdapter(adKuliner);
+                adKuliner.notifyDataSetChanged();
 
-                proses.enqueue(new Callback<ModelResponse>() {
-                    @Override
-                    public void onResponse(Call<ModelResponse> call, Response<ModelResponse> response) {
-                        String kode = response.body().getKode();
-                        String pesan = response.body().getPesan();
-                        listKuliner = response.body().getData();
-
-                        adKuliner = new AdapterKuliner(MainActivity.this, listKuliner);
-                        rvKuliner.setAdapter(adKuliner);
-                        adKuliner.notifyDataSetChanged();
-
-                        pbKuliner.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onFailure(Call<ModelResponse> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, "Gagal Menghubungi Server", Toast.LENGTH_SHORT).show();
-                        pbKuliner.setVisibility(View.GONE);
-                    }
-                });
+                pbKuliner.setVisibility(View.GONE);
             }
 
             @Override
-            public Call<ModelResponse> ardCreate(String nama, String asal, String deskripsi_singkat) {
-                return null;
+            public void onFailure(Call<ModelResponse> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Gagal menghubungi Server", Toast.LENGTH_SHORT).show();
+                pbKuliner.setVisibility(View.GONE);
             }
-
-            @Override
-            public Call<ModelResponse> ardUpdate(String id, String nama, String asal, String deskripsi_singkat) {
-                return null;
-            }
-
-            @Override
-            public Call<ModelResponse> ardDelete(String id) {
-                return null;
-            }
-        }
+        });
     }
-
 }
